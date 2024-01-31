@@ -1,0 +1,15 @@
+_schema-version: "2.1"
+ID: personalization-api
+version: 0.0.1
+modules:
+- name: personalization-api-db-deployer
+  type: hdb
+  path: db
+  requires:
+  - name: personalization-api-db
+resources:
+- name: personalization-api-db
+  type: com.sap.xs.hdi-container
+  parameters:
+    config:
+      schema: PERSONALIZATION

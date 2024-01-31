@@ -1,0 +1,26 @@
+{
+  "name": "personalization-api",
+  "version": "1.0.0",
+  "description": "ExpressJS API for SAPUI5 Smart Controls Variant Management Personalization",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test.js"
+  },
+  "keywords": [
+    "variant",
+    "SAPUI5",
+    "fiori",
+    "BTP",
+    "smart",
+    "Cloud",
+    "Foundry",
+    "UI5",
+    "Flexibility"
+  ],
+  "author": "Hasan Ciftci (hasanciftcii26@gmail.com)",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
