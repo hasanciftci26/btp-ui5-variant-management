@@ -113,7 +113,7 @@ class PersonalizationAPI {
 
         switch (variant.CHANGE_TYPE) {
             case "table":
-                let smartTable = new SmartTable(variant);
+                let smartTable = new SmartTable(variant, this.#username);
                 content = await smartTable.getContent();
                 break;
             case "filterBar":
@@ -131,8 +131,19 @@ class PersonalizationAPI {
     }
 
     async #createComponentVariant(variant) {
-        let insertStatement = await this.#generateCompInsertStatement(variant);
-        await HanaClient.statementExecPromisified(insertStatement.statement, insertStatement.params);
+        let compInsertStatement = await this.#generateCompInsertStatement(variant);
+        await HanaClient.statementExecPromisified(compInsertStatement.statement, compInsertStatement.params);
+
+        switch (variant.changeType) {
+            case "table":
+                let smartTable = new SmartTable(variant, this.#username);
+                await smartTable.createTableVariant(variant);
+                break;
+            case "filterBar":
+                
+                break;
+        }
+
         return variant;
     }
 
@@ -140,8 +151,8 @@ class PersonalizationAPI {
         let utcTimeStamp = await HanaClient.statementExecPromisified(`SELECT CURRENT_UTCTIMESTAMP FROM DUMMY`),
             currentTimeStamp = utcTimeStamp[0]["CURRENT_UTCTIMESTAMP"],
             changeTypeFields = this.#getChangeTypeSpecificFields(variant),
-            columns = tableColumns.componentVariants.join(),
-            questionMarks = CommonMethods.getQuestionMarks(tableColumns.componentVariants.length);
+            columns = tableColumns.COMPONENT_VARIANTS.join(),
+            questionMarks = CommonMethods.getQuestionMarks(tableColumns.COMPONENT_VARIANTS.length);
 
         let variantInsertParams = [
             variant.projectId,

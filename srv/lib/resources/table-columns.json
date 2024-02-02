@@ -1,5 +1,5 @@
 {
-    "componentVariants": [
+    "COMPONENT_VARIANTS": [
         "PROJECT_ID",
         "FILE_NAME",
         "USER_NAME",
@@ -19,5 +19,34 @@
         "DEFAULT_VARIANT_NAME",
         "PACKAGE_NAME",
         "VARIANT_ID"
+    ],
+    "TABLE_CONTENT": [
+        "PROJECT_ID",
+        "FILE_NAME",
+        "USER_NAME",
+        "PERSISTENCY_KEY",
+        "COLUMN_KEY",
+        "COLUMN_INDEX",
+        "COLUMN_WIDTH",
+        "COLUMN_VISIBLE"
+    ],
+    "TABLE_SORT_ITEMS": [
+        "PROJECT_ID",
+        "FILE_NAME",
+        "USER_NAME",
+        "PERSISTENCY_KEY",
+        "COLUMN_KEY",
+        "OPERATION"
+    ],
+    "TABLE_FILTERS": [
+        "PROJECT_ID",
+        "FILE_NAME",
+        "USER_NAME",
+        "PERSISTENCY_KEY",
+        "COLUMN_KEY",
+        "OPERATION",
+        "FIRST_VALUE",
+        "SECOND_VALUE",
+        "EXCLUDE"
     ]
 }

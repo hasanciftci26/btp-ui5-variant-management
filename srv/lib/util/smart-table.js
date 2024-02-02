@@ -1,4 +1,6 @@
-const HanaClient = require("./hana-client");
+const HanaClient = require("./hana-client"),
+    tableColumns = require("../resources/table-columns.json"),
+    CommonMethods = require("./common-methods");
 
 class SmartTable {
     #projectId;
@@ -7,12 +9,12 @@ class SmartTable {
     #persistencyKey;
     #layer;
 
-    constructor(variant) {
-        this.#projectId = variant.PROJECT_ID;
-        this.#fileName = variant.FILE_NAME;
-        this.#username = variant.USER_NAME;
-        this.#persistencyKey = variant.PERSISTENCY_KEY;
-        this.#layer = variant.LAYER;
+    constructor(variant, username) {
+        this.#projectId = variant.PROJECT_ID || variant.projectId;
+        this.#fileName = variant.FILE_NAME || variant.fileName;
+        this.#username = username;
+        this.#persistencyKey = variant.PERSISTENCY_KEY || variant.selector.persistencyKey;
+        this.#layer = variant.LAYER || variant.layer;
     }
 
     async getContent() {
@@ -45,7 +47,7 @@ class SmartTable {
     #generateSelectStatement(tableName) {
         let selectStatement =
             `
-                SELECT * FROM ${tableName}
+                SELECT * FROM "${tableName}"
                 WHERE PROJECT_ID      = '${this.#projectId}' AND
                       FILE_NAME       = '${this.#fileName}'  AND
                       PERSISTENCY_KEY = '${this.#persistencyKey}'
@@ -63,14 +65,16 @@ class SmartTable {
             return;
         }
 
-        content.columns.columnItems = tableContent.map((contentItem) => {
+        Object.assign(content, { columns: {} });
+
+        content.columns.columnsItems = tableContent.map((contentItem) => {
             let columnItem = {
                 columnKey: contentItem.COLUMN_KEY
             };
 
-            Object.assign(columnItem, contentItem.INDEX === null ? { index: contentItem.INDEX } : {});
-            Object.assign(columnItem, contentItem.WIDTH === null ? { width: contentItem.WIDTH } : {});
-            Object.assign(columnItem, contentItem.VISIBLE === null ? { visible: contentItem.VISIBLE } : {});
+            Object.assign(columnItem, contentItem.COLUMN_INDEX !== null ? { index: contentItem.COLUMN_INDEX } : {});
+            Object.assign(columnItem, contentItem.COLUMN_WIDTH !== null ? { width: contentItem.COLUMN_WIDTH } : {});
+            Object.assign(columnItem, contentItem.COLUMN_VISIBLE !== null ? { visible: contentItem.COLUMN_VISIBLE } : {});
             return columnItem;
         });
     }
@@ -79,6 +83,8 @@ class SmartTable {
         if (!tableSortItems.length) {
             return;
         }
+
+        Object.assign(content, { sort: {} });
 
         content.sort.sortItems = tableSortItems.map((sortItem) => {
             return {
@@ -93,6 +99,8 @@ class SmartTable {
             return;
         }
 
+        Object.assign(content, { filter: {} });
+
         content.filter.filterItems = tableFilters.map((filter) => {
             let filterItem = {
                 columnKey: content.COLUMN_KEY,
@@ -101,9 +109,96 @@ class SmartTable {
                 exclude: content.EXCLUDE
             };
 
-            Object.assign(filterItem, filter.SECOND_VALUE === null ? { value2: filter.SECOND_VALUE } : {});
+            Object.assign(filterItem, filter.SECOND_VALUE !== null ? { value2: filter.SECOND_VALUE } : {});
             return filterItem;
         });
+    }
+
+    async createTableVariant(variant) {
+        await this.#createTableContent(variant);
+        await this.#createTableSortItems(variant);
+        await this.#createTableFilters(variant);
+    }
+
+    async #createTableContent(variant) {
+        if (!variant.content.columns) {
+            return;
+        }
+
+        for (const content of variant.content.columns.columnsItems) {
+            let tableContentInsertStatement = this.#generateInsertStatement("TABLE_CONTENT");
+
+            await HanaClient.statementExecPromisified(tableContentInsertStatement, [
+                variant.projectId,
+                variant.fileName,
+                this.#username,
+                variant.selector.persistencyKey,
+                content.columnKey,
+                content?.index,
+                content?.width,
+                content?.visible
+            ]);
+        }
+    }
+
+    async #createTableSortItems(variant) {
+        if (!variant.content.sort) {
+            return;
+        }
+
+        for (const content of variant.content.sort.sortItems) {
+            let tableSortInsertStatement = this.#generateInsertStatement("TABLE_SORT_ITEMS");
+
+            await HanaClient.statementExecPromisified(tableSortInsertStatement, [
+                variant.projectId,
+                variant.fileName,
+                this.#username,
+                variant.selector.persistencyKey,
+                content.columnKey,
+                content.operation
+            ]);
+        }
+    }
+
+    async #createTableFilters(variant) {
+        if (!variant.content.filter) {
+            return;
+        }
+
+        for (const content of variant.content.filter.filterItems) {
+            let tableFilterInsertStatement = this.#generateInsertStatement("TABLE_FILTERS");
+
+            await HanaClient.statementExecPromisified(tableFilterInsertStatement, [
+                variant.projectId,
+                variant.fileName,
+                this.#username,
+                variant.selector.persistencyKey,
+                content.columnKey,
+                content.operation,
+                content.value1,
+                content?.value2,
+                content.exclude
+            ]);
+        }
+    }
+
+    #generateInsertStatement(tableName) {
+        let columns = tableColumns[tableName],
+            questionMarks = CommonMethods.getQuestionMarks(tableColumns[tableName].length);
+
+        let insertStatement =
+            `
+                INSERT INTO "${tableName}" 
+                (
+                    ${columns}
+                ) 
+                VALUES 
+                (
+                    ${questionMarks}
+                )
+            `;
+
+        return insertStatement;
     }
 };
 
