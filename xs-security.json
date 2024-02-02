@@ -1,0 +1,26 @@
+{
+    "xsappname": "personalization-api",
+    "tenant-mode": "dedicated",
+    "scopes": [
+        {
+            "name": "$XSAPPNAME.ExternalCalls",
+            "description": "Enable Calls into Granting App",
+            "granted-apps": [
+                "$XSAPPNAME(application, personalization-api-consumer)"
+            ],
+            "grant-as-authority-to-apps": [
+                "$XSAPPNAME(application, personalization-api-consumer)"
+            ]
+        }
+    ],
+    "attributes": [],
+    "role-templates": [
+        {
+            "name": "ExternalAccessRole",
+            "default-role-name": "ExternalAccessRole",
+            "scope-references": [
+                "$XSAPPNAME.ExternalCalls"
+            ]
+        }
+    ]
+}

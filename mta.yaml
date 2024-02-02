@@ -1,4 +1,4 @@
-_schema-version: "2.1"
+_schema-version: "3.1"
 ID: personalization-api
 version: 0.0.1
 modules:
@@ -7,9 +7,38 @@ modules:
   path: db
   requires:
   - name: personalization-api-db
+  parameters:
+    disk-quota: 256M
+  build-parameters:
+    ignore:
+    - default-env.json
+    - .env
+- name: personalization-api-srv
+  type: nodejs
+  path: srv
+  requires:
+  - name: personalization-api-db
+  - name: personalization-api-auth
+  provides:
+  - name: srv_api
+    properties:
+      url: ${default-url}
+  parameters:
+    disk-quota: 512M
+    memory: 512M
+  build-parameters:
+    ignore:
+    - default-env.json
+    - .env
 resources:
 - name: personalization-api-db
   type: com.sap.xs.hdi-container
   parameters:
-    config:
-      schema: PERSONALIZATION
+    service: hana
+    service-plan: hdi-shared
+- name: personalization-api-auth
+  type: org.cloudfoundry.managed-service
+  parameters:
+    path: ./xs-security.json
+    service: xsuaa
+    service-plan: application

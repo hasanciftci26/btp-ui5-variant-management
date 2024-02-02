@@ -21,6 +21,10 @@
   "author": "Hasan Ciftci (hasanciftcii26@gmail.com)",
   "license": "UNLICENSED",
   "dependencies": {
-    "express": "^4.18.2"
+    "@sap/hdbext": "^8.0.3",
+    "@sap/xsenv": "^4.2.0",
+    "@sap/xssec": "^3.6.1",
+    "express": "^4.18.2",
+    "passport": "^0.7.0"
   }
 }
