@@ -1,0 +1,23 @@
+{
+    "componentVariants": [
+        "PROJECT_ID",
+        "FILE_NAME",
+        "USER_NAME",
+        "PERSISTENCY_KEY",
+        "GENERATOR",
+        "ORIGINAL_LANGUAGE",
+        "LAYER",
+        "FILE_TYPE",
+        "VARIANT_NAME",
+        "VARIANT_TYPE",
+        "FAVORITE",
+        "EXECUTE_ON_SELECTION",
+        "STANDARD_VARIANT",
+        "CHANGE_TYPE",
+        "SAPUI5_VERSION",
+        "CREATION",
+        "DEFAULT_VARIANT_NAME",
+        "PACKAGE_NAME",
+        "VARIANT_ID"
+    ]
+}
