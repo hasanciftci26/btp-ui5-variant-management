@@ -1,3 +1,5 @@
+const tableColumns = require("../resources/table-columns.json");
+
 class CommonMethods {
     static getQuestionMarks(count) {
         let index = 0,
@@ -9,6 +11,25 @@ class CommonMethods {
         }
 
         return questionMarks.join();
+    }
+
+    static generateInsertStatement(tableName) {
+        let columns = tableColumns[tableName],
+            questionMarks = this.getQuestionMarks(tableColumns[tableName].length);
+
+        let insertStatement =
+            `
+                INSERT INTO "${tableName}" 
+                (
+                    ${columns}
+                ) 
+                VALUES 
+                (
+                    ${questionMarks}
+                )
+            `;
+
+        return insertStatement;
     }
 };
 

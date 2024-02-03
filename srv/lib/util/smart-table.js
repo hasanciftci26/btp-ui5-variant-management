@@ -1,5 +1,4 @@
 const HanaClient = require("./hana-client"),
-    tableColumns = require("../resources/table-columns.json"),
     CommonMethods = require("./common-methods");
 
 class SmartTable {
@@ -126,7 +125,7 @@ class SmartTable {
         }
 
         for (const content of variant.content.columns.columnsItems) {
-            let tableContentInsertStatement = this.#generateInsertStatement("TABLE_CONTENT");
+            let tableContentInsertStatement = CommonMethods.generateInsertStatement("TABLE_CONTENT");
 
             await HanaClient.statementExecPromisified(tableContentInsertStatement, [
                 variant.projectId,
@@ -147,7 +146,7 @@ class SmartTable {
         }
 
         for (const content of variant.content.sort.sortItems) {
-            let tableSortInsertStatement = this.#generateInsertStatement("TABLE_SORT_ITEMS");
+            let tableSortInsertStatement = CommonMethods.generateInsertStatement("TABLE_SORT_ITEMS");
 
             await HanaClient.statementExecPromisified(tableSortInsertStatement, [
                 variant.projectId,
@@ -166,7 +165,7 @@ class SmartTable {
         }
 
         for (const content of variant.content.filter.filterItems) {
-            let tableFilterInsertStatement = this.#generateInsertStatement("TABLE_FILTERS");
+            let tableFilterInsertStatement = CommonMethods.generateInsertStatement("TABLE_FILTERS");
 
             await HanaClient.statementExecPromisified(tableFilterInsertStatement, [
                 variant.projectId,
@@ -180,25 +179,6 @@ class SmartTable {
                 content.exclude
             ]);
         }
-    }
-
-    #generateInsertStatement(tableName) {
-        let columns = tableColumns[tableName],
-            questionMarks = CommonMethods.getQuestionMarks(tableColumns[tableName].length);
-
-        let insertStatement =
-            `
-                INSERT INTO "${tableName}" 
-                (
-                    ${columns}
-                ) 
-                VALUES 
-                (
-                    ${questionMarks}
-                )
-            `;
-
-        return insertStatement;
     }
 };
 

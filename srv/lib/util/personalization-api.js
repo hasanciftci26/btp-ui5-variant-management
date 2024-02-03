@@ -117,7 +117,7 @@ class PersonalizationAPI {
                 content = await smartTable.getContent();
                 break;
             case "filterBar":
-                let smartFilterbar = new SmartFilterbar(variant);
+                let smartFilterbar = new SmartFilterbar(variant, this.#username);
                 content = await smartFilterbar.getContent();
                 break;
         }
@@ -140,7 +140,8 @@ class PersonalizationAPI {
                 await smartTable.createTableVariant(variant);
                 break;
             case "filterBar":
-                
+                let smartFilterbar = new SmartFilterbar(variant, this.#username);
+                await smartFilterbar.createFilterbarVariant(variant);                
                 break;
         }
 
