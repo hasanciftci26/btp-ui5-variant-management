@@ -29,34 +29,18 @@ class SmartTable {
     }
 
     async #getTableContentFromDB() {
-        let dbStatement = this.#generateSelectStatement("TABLE_CONTENT");
+        let dbStatement = CommonMethods.generateSelectStatement("TABLE_CONTENT", this.#projectId, this.#fileName, this.#persistencyKey, this.#username, this.#layer);
         return HanaClient.statementExecPromisified(dbStatement);
     }
 
     async #getTableSortItemsFromDB() {
-        let dbStatement = this.#generateSelectStatement("TABLE_SORT_ITEMS");
+        let dbStatement = CommonMethods.generateSelectStatement("TABLE_SORT_ITEMS", this.#projectId, this.#fileName, this.#persistencyKey, this.#username, this.#layer);
         return HanaClient.statementExecPromisified(dbStatement);
     }
 
     async #getTableFiltersFromDB() {
-        let dbStatement = this.#generateSelectStatement("TABLE_FILTERS");
+        let dbStatement = CommonMethods.generateSelectStatement("TABLE_FILTERS", this.#projectId, this.#fileName, this.#persistencyKey, this.#username, this.#layer);
         return HanaClient.statementExecPromisified(dbStatement);
-    }
-
-    #generateSelectStatement(tableName) {
-        let selectStatement =
-            `
-                SELECT * FROM "${tableName}"
-                WHERE PROJECT_ID      = '${this.#projectId}' AND
-                      FILE_NAME       = '${this.#fileName}'  AND
-                      PERSISTENCY_KEY = '${this.#persistencyKey}'
-            `;
-
-        if (this.#layer === "USER") {
-            selectStatement = selectStatement + " AND USER_NAME = '" + this.#username + "'";
-        }
-
-        return selectStatement;
     }
 
     #generateTableContent(content, tableContent) {

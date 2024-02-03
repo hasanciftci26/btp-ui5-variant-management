@@ -2,7 +2,6 @@ const KeyUser = require("./keyuser"),
     HanaClient = require("./hana-client"),
     SmartTable = require("./smart-table"),
     SmartFilterbar = require("./smart-filterbar"),
-    tableColumns = require("../resources/table-columns.json"),
     CommonMethods = require("./common-methods");
 
 class PersonalizationAPI {
@@ -16,17 +15,9 @@ class PersonalizationAPI {
         this.#layer = layer;
     }
 
-    async getKeyUserSettings() {
-        let keyuser = new KeyUser(this.#username),
-            keyuserSettings = {};
-
-        try {
-            keyuserSettings = await keyuser.getSettings();
-        } catch (error) {
-            throw error;
-        }
-
-        return keyuserSettings;
+    getKeyUserSettings(req) {
+        let keyuser = new KeyUser(this.#username);
+        return keyuser.getSettings(req);
     }
 
     async getPersonalizationData() {
@@ -141,7 +132,7 @@ class PersonalizationAPI {
                 break;
             case "filterBar":
                 let smartFilterbar = new SmartFilterbar(variant, this.#username);
-                await smartFilterbar.createFilterbarVariant(variant);                
+                await smartFilterbar.createFilterbarVariant(variant);
                 break;
         }
 
@@ -151,9 +142,7 @@ class PersonalizationAPI {
     async #generateCompInsertStatement(variant) {
         let utcTimeStamp = await HanaClient.statementExecPromisified(`SELECT CURRENT_UTCTIMESTAMP FROM DUMMY`),
             currentTimeStamp = utcTimeStamp[0]["CURRENT_UTCTIMESTAMP"],
-            changeTypeFields = this.#getChangeTypeSpecificFields(variant),
-            columns = tableColumns.COMPONENT_VARIANTS.join(),
-            questionMarks = CommonMethods.getQuestionMarks(tableColumns.COMPONENT_VARIANTS.length);
+            changeTypeFields = this.#getChangeTypeSpecificFields(variant);
 
         let variantInsertParams = [
             variant.projectId,
@@ -177,17 +166,7 @@ class PersonalizationAPI {
             changeTypeFields.variantId
         ];
 
-        let variantInsertStatement =
-            `
-                INSERT INTO "COMPONENT_VARIANTS" 
-                (
-                    ${columns}
-                ) 
-                VALUES 
-                (
-                    ${questionMarks}
-                )
-            `;
+        let variantInsertStatement = CommonMethods.generateInsertStatement("COMPONENT_VARIANTS");
 
         variant.creation = currentTimeStamp;
         variant.support.user = this.#username;

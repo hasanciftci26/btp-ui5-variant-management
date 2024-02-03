@@ -22,15 +22,10 @@ router.post("/personalization/v1/changes/", async (req, res, next) => {
 });
 
 router.get("/keyuser/v2/settings", async (req, res, next) => {
-    let personalization = new PersonalizationAPI(null, req.authInfo.getLogonName(), null);
-    keyuserSettings = {};
+    let personalization = new PersonalizationAPI(null, req.authInfo.getLogonName(), null),
+        keyuserSettings = personalization.getKeyUserSettings(req);
 
-    try {
-        keyuserSettings = await personalization.getKeyUserSettings();
-        res.json(keyuserSettings);
-    } catch (error) {
-        res.status(404).send(error.message);
-    }
+    res.json(keyuserSettings);
 });
 
 module.exports = router;
