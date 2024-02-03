@@ -1,5 +1,6 @@
 const HanaClient = require("./hana-client"),
-    CommonMethods = require("./common-methods");
+    CommonMethods = require("./common-methods"),
+    crypto = require("crypto");
 
 class SmartFilterbar {
     #projectId;
