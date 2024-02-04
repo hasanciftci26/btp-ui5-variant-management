@@ -1,12 +1,18 @@
 const HanaClient = require("./hana-client"),
     xsenv = require("@sap/xsenv"),
-    keyuserSettings = require("../resources/keyuser-settings.json");
+    keyuserSettings = require("../resources/keyuser-settings.json"),
+    PersonalizationAPI = require("./personalization-api");
 
-class KeyUser {
-    #username;
+class KeyUser extends PersonalizationAPI {
+    #keyProjectId;
+    #keyUsername;
+    #keyLayer;
 
-    constructor(username) {
-        this.#username = username;
+    constructor(projectId, username, layer) {
+        super(projectId, username, layer); //Initialize super class
+        this.#keyProjectId = projectId;
+        this.#keyUsername = username;
+        this.#keyLayer = layer;
     }
 
     getSettings(req) {
@@ -17,16 +23,45 @@ class KeyUser {
                 }
             }).uaa;
 
-        if(req.authInfo.checkScope(xsuaaInstance.xsappname + ".Admin")) {
+        if (req.authInfo.checkScope(xsuaaInstance.xsappname + ".Admin")) {
             settings = keyuserSettings.Admin;
-        } else if (req.authInfo.checkScope(xsuaaInstance.xsappname + ".PublicViewManager")){
+        } else if (req.authInfo.checkScope(xsuaaInstance.xsappname + ".PublicViewManager")) {
             settings = keyuserSettings.PublicViewManager;
         } else {
             settings = keyuserSettings.RegularUser;
         }
 
-        settings.logonUser = this.#username;
+        settings.logonUser = this.#keyUsername;
         return settings;
+    }
+
+    async getKeyUserData() {
+        let componentVariants = await super.getKeyUserComponentVariants(),
+            changes = await super.getKeyUserChanges();
+
+        return {
+            contents: [
+                {
+                    appDescriptorChanges: [],
+                    changes: [],
+                    variantDependentControlChanges: [],
+                    compVariants: [],
+                    variantChanges: [],
+                    variants: [],
+                    variantManagementChanges: []
+                },
+                {
+                    compVariants: componentVariants,
+                    variants: [],
+                    variantDependentControlChanges: [],
+                    variantChanges: []
+                }
+            ]
+        };
+    }
+
+    async createKeyUserData(keyuserData) {
+        return super.createPersonalizationData(keyuserData);
     }
 };
 

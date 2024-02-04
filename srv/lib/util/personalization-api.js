@@ -1,5 +1,4 @@
-const KeyUser = require("./keyuser"),
-    HanaClient = require("./hana-client"),
+const HanaClient = require("./hana-client"),
     SmartTable = require("./smart-table"),
     SmartFilterbar = require("./smart-filterbar"),
     CommonMethods = require("./common-methods");
@@ -13,11 +12,6 @@ class PersonalizationAPI {
         this.#projectId = projectId;
         this.#username = username;
         this.#layer = layer;
-    }
-
-    getKeyUserSettings(req) {
-        let keyuser = new KeyUser(this.#username);
-        return keyuser.getSettings(req);
     }
 
     async getPersonalizationData() {
@@ -334,6 +328,14 @@ class PersonalizationAPI {
         await HanaClient.statementExecPromisified(deleteVariantStatement);
         await smartTable.deleteTableVariant("DELETE");
         await smartFilterbar.deleteFilterbarVariant("DELETE");
+    }
+
+    async getKeyUserComponentVariants() {
+        return this.#getComponentVariants();
+    }
+
+    async getKeyUserChanges() {
+        return this.#getChanges();
     }
 }
 

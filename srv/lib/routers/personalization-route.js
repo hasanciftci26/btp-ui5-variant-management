@@ -1,6 +1,7 @@
 const express = require("express"),
     router = express.Router(),
-    PersonalizationAPI = require("../util/personalization-api");
+    PersonalizationAPI = require("../util/personalization-api"),
+    KeyUser = require("../util/keyuser");
 
 router.head("/personalization/v1/actions/getcsrftoken", (req, res, next) => {
     res.set("X-CSRF-Token", "4ba7ac47ac735bd5-wwQTNsqYV2tTktOM3NHEp9b4N5M");
@@ -35,10 +36,24 @@ router.delete("/personalization/v1/changes/:fileName", async (req, res, next) =>
 });
 
 router.get("/keyuser/v2/settings", async (req, res, next) => {
-    let personalization = new PersonalizationAPI(null, req.authInfo.getLogonName(), null),
-        keyuserSettings = personalization.getKeyUserSettings(req);
+    let keyuser = new KeyUser("UNKNOWN", req.authInfo.getLogonName(), "PUBLIC"),
+        keyuserSettings = keyuser.getSettings(req);
 
     res.json(keyuserSettings);
+});
+
+router.get("/keyuser/v2/data/:projectId", async (req, res, next) => {
+    let keyuser = new KeyUser(req.params.projectId, req.authInfo.getLogonName(), "PUBLIC"),
+        keyuserData = await keyuser.getKeyUserData();
+
+    res.json(keyuserData);
+});
+
+router.post("/keyuser/v2/changes/", async (req, res, next) => {
+    let keyuser = new KeyUser(req.body.projectId, req.authInfo.getLogonName(), "PUBLIC"),
+        keyuserData = await keyuser.createKeyUserData(req.body[0]);
+
+    res.json(keyuserData);
 });
 
 module.exports = router;
