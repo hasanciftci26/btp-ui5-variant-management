@@ -80,7 +80,65 @@ class PersonalizationAPI {
     }
 
     async #getChanges() {
-        return [];
+        let allChanges = await this.#getChangesFromDB(),
+            changes = allChanges.map((variant) => {
+                let changeContent = {
+                    changeType: variant.CHANGE_TYPE,
+                    reference: variant.PROJECT_ID,
+                    namespace: `apps/${variant.PROJECT_ID}/changes/`,
+                    creation: variant.CREATION,
+                    projectId: variant.PROJECT_ID,
+                    support: {
+                        user: variant.USER_NAME,
+                        sapui5Version: variant.SAPUI5_VERSION
+                    },
+                    originalLanguage: variant.ORIGINAL_LANGUAGE,
+                    layer: variant.LAYER,
+                    fileType: variant.FILE_TYPE,
+                    fileName: variant.FILE_NAME,
+                    texts: {},
+                    selector: {
+                        persistencyKey: variant.PERSISTENCY_KEY
+                    },
+                    dependentSelector: {}
+                };
+
+                switch (variant.CHANGE_TYPE) {
+                    case "defaultVariant":
+                        changeContent.support.generator = variant.GENERATOR;
+                        changeContent.content = {
+                            defaultVariantName: variant.DEFAULT_VARIANT_NAME
+                        };
+                        break;
+                    case "updateVariant":
+                        changeContent.content = {
+                            executeOnSelection: variant.EXECUTE_ON_SELECTION
+                        };
+                        changeContent.selector.variantId = variant.VARIANT_ID;
+
+                        if (variant.VARIANT_ID !== "*standard*") {
+                            changeContent.content.favorite = variant.FAVORITE;
+                        }
+                        break;
+                }
+
+                return changeContent;
+            });
+
+        return changes;
+    }
+
+    async #getChangesFromDB() {
+        let changesStatement =
+            `
+                SELECT * FROM "COMPONENT_VARIANTS"
+                WHERE PROJECT_ID = '${this.#projectId}' AND
+                      USER_NAME = '${this.#username}'   AND
+                      LAYER = '${this.#layer}'          AND
+                      CHANGE_TYPE IN ('defaultVariant','updateVariant')
+            `;
+
+        return HanaClient.statementExecPromisified(changesStatement);
     }
 
     async #getCompVariantsFromDB() {
@@ -216,20 +274,27 @@ class PersonalizationAPI {
     }
 
     async #updateComponentVariant(variant) {
-        await this.#deleteComponentVariant(variant);
+        let variantResponse = variant;
 
         switch (variant.changeType) {
             case "table":
                 let smartTable = new SmartTable(variant, this.#username);
+                await this.#deleteComponentVariant(variant);
                 await smartTable.deleteTableVariant("UPDATE");
+                variantResponse = await this.#createComponentVariant(variant);
                 break;
             case "filterBar":
                 let smartFilterbar = new SmartFilterbar(variant, this.#username);
+                await this.#deleteComponentVariant(variant);
                 await smartFilterbar.deleteFilterbarVariant("UPDATE");
+                variantResponse = await this.#createComponentVariant(variant);
+                break;
+            case "defaultVariant":
+                await this.#updateDefaultVariant(variant);
                 break;
         }
 
-        return this.#createComponentVariant(variant);
+        return variantResponse;
     }
 
     async #deleteComponentVariant(variant) {
@@ -237,6 +302,21 @@ class PersonalizationAPI {
             variant.selector.persistencyKey, this.#username, "UPDATE");
 
         await HanaClient.statementExecPromisified(deleteVariantStatement);
+    }
+
+    async #updateDefaultVariant(variant) {
+        let updateDefaultVariantStatement =
+            `
+				UPDATE "COMPONENT_VARIANTS"
+				SET DEFAULT_VARIANT_NAME = '${variant.content.defaultVariantName}'
+				WHERE PROJECT_ID = '${this.#projectId}'                      AND
+					  FILE_NAME = '${variant.fileName}'                      AND
+					  USER_NAME = '${this.#username}'                        AND
+					  PERSISTENCY_KEY = '${variant.selector.persistencyKey}' AND
+					  CHANGE_TYPE = 'defaultVariant'
+			`;
+
+        await HanaClient.statementExecPromisified(updateDefaultVariantStatement);
     }
 
     async deletePersonalizationData(fileName) {
