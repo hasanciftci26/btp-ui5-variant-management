@@ -320,7 +320,7 @@ class PersonalizationAPI {
                 PROJECT_ID: this.#projectId,
                 FILE_NAME: fileName,
                 PERSISTENCY_KEY: "UNKNOWN",
-                LAYER: "USER"
+                LAYER: this.#layer
             },
             smartTable = new SmartTable(variant, this.#username),
             smartFilterbar = new SmartFilterbar(variant, this.#username);

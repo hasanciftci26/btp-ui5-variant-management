@@ -63,6 +63,14 @@ class KeyUser extends PersonalizationAPI {
     async createKeyUserData(keyuserData) {
         return super.createPersonalizationData(keyuserData);
     }
+
+    async updateKeyUserData(keyuserData) {
+        return super.updatePersonalizationData(keyuserData);
+    }
+
+    async deleteKeyUserData(fileName) {
+        await super.deletePersonalizationData(fileName);
+    }
 };
 
 module.exports = KeyUser;

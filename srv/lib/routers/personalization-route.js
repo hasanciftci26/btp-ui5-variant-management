@@ -49,11 +49,24 @@ router.get("/keyuser/v2/data/:projectId", async (req, res, next) => {
     res.json(keyuserData);
 });
 
+router.put("/keyuser/v2/changes/:fileName", async (req, res, next) => {
+    let keyuser = new KeyUser(req.body.projectId, req.authInfo.getLogonName(), "PUBLIC"),
+        keyuserData = await keyuser.updateKeyUserData(req.body);
+
+    res.json(keyuserData);
+});
+
 router.post("/keyuser/v2/changes/", async (req, res, next) => {
     let keyuser = new KeyUser(req.body.projectId, req.authInfo.getLogonName(), "PUBLIC"),
         keyuserData = await keyuser.createKeyUserData(req.body[0]);
 
     res.json(keyuserData);
+});
+
+router.delete("/keyuser/v2/changes/:fileName", async (req, res, next) => {
+    let keyuser = new KeyUser(req.query.namespace.split("/")[1], req.authInfo.getLogonName(), "PUBLIC");
+    await keyuser.deleteKeyUserData(req.params.fileName);
+    res.sendStatus(204);
 });
 
 module.exports = router;
