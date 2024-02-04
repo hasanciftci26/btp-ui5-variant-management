@@ -221,11 +221,11 @@ class PersonalizationAPI {
         switch (variant.changeType) {
             case "table":
                 let smartTable = new SmartTable(variant, this.#username);
-                await smartTable.deleteTableVariant();
+                await smartTable.deleteTableVariant("UPDATE");
                 break;
             case "filterBar":
                 let smartFilterbar = new SmartFilterbar(variant, this.#username);
-                await smartFilterbar.deleteFilterbarVariant();
+                await smartFilterbar.deleteFilterbarVariant("UPDATE");
                 break;
         }
 
@@ -234,9 +234,26 @@ class PersonalizationAPI {
 
     async #deleteComponentVariant(variant) {
         let deleteVariantStatement = CommonMethods.generateDeleteStatement("COMPONENT_VARIANTS", this.#projectId, variant.fileName,
-            variant.selector.persistencyKey, this.#username);
+            variant.selector.persistencyKey, this.#username, "UPDATE");
 
         await HanaClient.statementExecPromisified(deleteVariantStatement);
+    }
+
+    async deletePersonalizationData(fileName) {
+        let deleteVariantStatement = CommonMethods.generateDeleteStatement("COMPONENT_VARIANTS", this.#projectId, fileName,
+            "UNKNOWN", this.#username, "DELETE"),
+            variant = {
+                PROJECT_ID: this.#projectId,
+                FILE_NAME: fileName,
+                PERSISTENCY_KEY: "UNKNOWN",
+                LAYER: "USER"
+            },
+            smartTable = new SmartTable(variant, this.#username),
+            smartFilterbar = new SmartFilterbar(variant, this.#username);
+
+        await HanaClient.statementExecPromisified(deleteVariantStatement);
+        await smartTable.deleteTableVariant("DELETE");
+        await smartFilterbar.deleteFilterbarVariant("DELETE");
     }
 }
 

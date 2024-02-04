@@ -171,26 +171,26 @@ class SmartTable {
         }
     }
 
-    async deleteTableVariant() {
+    async deleteTableVariant(operation) {
         await Promise.all([
-            this.#deleteTableContent(),
-            this.#deleteTableSortItems(),
-            this.#deleteTableFilters()
+            this.#deleteTableContent(operation),
+            this.#deleteTableSortItems(operation),
+            this.#deleteTableFilters(operation)
         ]);
     }
 
-    async #deleteTableContent() {
-        let deleteContentStatement = CommonMethods.generateDeleteStatement("TABLE_CONTENT", this.#projectId, this.#fileName, this.#persistencyKey, this.#username);
+    async #deleteTableContent(operation) {
+        let deleteContentStatement = CommonMethods.generateDeleteStatement("TABLE_CONTENT", this.#projectId, this.#fileName, this.#persistencyKey, this.#username, operation);
         await HanaClient.statementExecPromisified(deleteContentStatement);
     }
 
-    async #deleteTableSortItems() {
-        let deleteSortItemsStatement = CommonMethods.generateDeleteStatement("TABLE_SORT_ITEMS", this.#projectId, this.#fileName, this.#persistencyKey, this.#username);
+    async #deleteTableSortItems(operation) {
+        let deleteSortItemsStatement = CommonMethods.generateDeleteStatement("TABLE_SORT_ITEMS", this.#projectId, this.#fileName, this.#persistencyKey, this.#username, operation);
         await HanaClient.statementExecPromisified(deleteSortItemsStatement);
     }
 
-    async #deleteTableFilters() {
-        let deleteFiltersStatement = CommonMethods.generateDeleteStatement("TABLE_FILTERS", this.#projectId, this.#fileName, this.#persistencyKey, this.#username);
+    async #deleteTableFilters(operation) {
+        let deleteFiltersStatement = CommonMethods.generateDeleteStatement("TABLE_FILTERS", this.#projectId, this.#fileName, this.#persistencyKey, this.#username, operation);
         await HanaClient.statementExecPromisified(deleteFiltersStatement);
     }
 };

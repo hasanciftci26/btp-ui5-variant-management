@@ -28,6 +28,12 @@ router.post("/personalization/v1/changes/", async (req, res, next) => {
     res.json(personalizationData);
 });
 
+router.delete("/personalization/v1/changes/:fileName", async (req, res, next) => {
+    let personalization = new PersonalizationAPI(req.query.namespace.split("/")[1], req.authInfo.getLogonName(), "USER");
+    await personalization.deletePersonalizationData(req.params.fileName);
+    res.sendStatus(204);
+});
+
 router.get("/keyuser/v2/settings", async (req, res, next) => {
     let personalization = new PersonalizationAPI(null, req.authInfo.getLogonName(), null),
         keyuserSettings = personalization.getKeyUserSettings(req);

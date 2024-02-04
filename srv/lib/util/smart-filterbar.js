@@ -275,32 +275,32 @@ class SmartFilterbar {
         }
     }
 
-    async deleteFilterbarVariant() {
+    async deleteFilterbarVariant(operation) {
         await Promise.all([
-            this.#deleteFilterbarContent(),
-            this.#deleteFilterbarOrder(),
-            this.#deleteFilterbarRanges(),
-            this.#deleteFilterbarItems()
+            this.#deleteFilterbarContent(operation),
+            this.#deleteFilterbarOrder(operation),
+            this.#deleteFilterbarRanges(operation),
+            this.#deleteFilterbarItems(operation)
         ]);
     }
 
-    async #deleteFilterbarContent() {
-        let deleteContentStatement = CommonMethods.generateDeleteStatement("FILTERBAR_CONTENT", this.#projectId, this.#fileName, this.#persistencyKey, this.#username);
+    async #deleteFilterbarContent(operation) {
+        let deleteContentStatement = CommonMethods.generateDeleteStatement("FILTERBAR_CONTENT", this.#projectId, this.#fileName, this.#persistencyKey, this.#username, operation);
         await HanaClient.statementExecPromisified(deleteContentStatement);
     }
 
-    async #deleteFilterbarOrder() {
-        let deleteOrderStatement = CommonMethods.generateDeleteStatement("FILTERBAR_ORDER", this.#projectId, this.#fileName, this.#persistencyKey, this.#username);
+    async #deleteFilterbarOrder(operation) {
+        let deleteOrderStatement = CommonMethods.generateDeleteStatement("FILTERBAR_ORDER", this.#projectId, this.#fileName, this.#persistencyKey, this.#username, operation);
         await HanaClient.statementExecPromisified(deleteOrderStatement);
     }
 
-    async #deleteFilterbarRanges() {
-        let deleteRangesStatement = CommonMethods.generateDeleteStatement("FILTERBAR_RANGES", this.#projectId, this.#fileName, this.#persistencyKey, this.#username);
+    async #deleteFilterbarRanges(operation) {
+        let deleteRangesStatement = CommonMethods.generateDeleteStatement("FILTERBAR_RANGES", this.#projectId, this.#fileName, this.#persistencyKey, this.#username, operation);
         await HanaClient.statementExecPromisified(deleteRangesStatement);
     }
 
-    async #deleteFilterbarItems() {
-        let deleteItemsStatement = CommonMethods.generateDeleteStatement("FILTERBAR_ITEMS", this.#projectId, this.#fileName, this.#persistencyKey, this.#username);
+    async #deleteFilterbarItems(operation) {
+        let deleteItemsStatement = CommonMethods.generateDeleteStatement("FILTERBAR_ITEMS", this.#projectId, this.#fileName, this.#persistencyKey, this.#username, operation);
         await HanaClient.statementExecPromisified(deleteItemsStatement);
     }
 };
