@@ -14,6 +14,13 @@ router.get("/personalization/v1/data/:projectId", async (req, res, next) => {
     res.json(personalizationData);
 });
 
+router.put("/personalization/v1/changes/:fileName", async (req, res, next) => {
+    let personalization = new PersonalizationAPI(req.body.projectId, req.authInfo.getLogonName(), "USER"),
+        personalizationData = await personalization.updatePersonalizationData(req.body);
+
+    res.json(personalizationData);
+});
+
 router.post("/personalization/v1/changes/", async (req, res, next) => {
     let personalization = new PersonalizationAPI(req.body.projectId, req.authInfo.getLogonName(), "USER"),
         personalizationData = await personalization.createPersonalizationData(req.body[0]);

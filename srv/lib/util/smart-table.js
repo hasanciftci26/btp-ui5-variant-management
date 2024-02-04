@@ -1,5 +1,6 @@
 const HanaClient = require("./hana-client"),
-    CommonMethods = require("./common-methods");
+    CommonMethods = require("./common-methods"),
+    crypto = require("crypto");
 
 class SmartTable {
     #projectId;
@@ -17,9 +18,11 @@ class SmartTable {
     }
 
     async getContent() {
-        let tableContent = await this.#getTableContentFromDB(),
-            tableSortItems = await this.#getTableSortItemsFromDB(),
-            tableFilters = await this.#getTableFiltersFromDB(),
+        let [tableContent, tableSortItems, tableFilters] = await Promise.all([
+            this.#getTableContentFromDB(),
+            this.#getTableSortItemsFromDB(),
+            this.#getTableFiltersFromDB()
+        ]),
             content = {};
 
         this.#generateTableContent(content, tableContent);
@@ -86,10 +89,10 @@ class SmartTable {
 
         content.filter.filterItems = tableFilters.map((filter) => {
             let filterItem = {
-                columnKey: content.COLUMN_KEY,
-                operation: content.OPERATION,
-                value1: content.FIRST_VALUE,
-                exclude: content.EXCLUDE
+                columnKey: filter.COLUMN_KEY,
+                operation: filter.OPERATION,
+                value1: filter.FIRST_VALUE,
+                exclude: filter.EXCLUDE
             };
 
             Object.assign(filterItem, filter.SECOND_VALUE !== null ? { value2: filter.SECOND_VALUE } : {});
@@ -98,9 +101,11 @@ class SmartTable {
     }
 
     async createTableVariant(variant) {
-        await this.#createTableContent(variant);
-        await this.#createTableSortItems(variant);
-        await this.#createTableFilters(variant);
+        await Promise.all([
+            this.#createTableContent(variant),
+            this.#createTableSortItems(variant),
+            this.#createTableFilters(variant)
+        ]);
     }
 
     async #createTableContent(variant) {
@@ -157,12 +162,36 @@ class SmartTable {
                 this.#username,
                 variant.selector.persistencyKey,
                 content.columnKey,
+                crypto.randomUUID(),
                 content.operation,
                 content.value1,
                 content?.value2,
                 content.exclude
             ]);
         }
+    }
+
+    async deleteTableVariant() {
+        await Promise.all([
+            this.#deleteTableContent(),
+            this.#deleteTableSortItems(),
+            this.#deleteTableFilters()
+        ]);
+    }
+
+    async #deleteTableContent() {
+        let deleteContentStatement = CommonMethods.generateDeleteStatement("TABLE_CONTENT", this.#projectId, this.#fileName, this.#persistencyKey, this.#username);
+        await HanaClient.statementExecPromisified(deleteContentStatement);
+    }
+
+    async #deleteTableSortItems() {
+        let deleteSortItemsStatement = CommonMethods.generateDeleteStatement("TABLE_SORT_ITEMS", this.#projectId, this.#fileName, this.#persistencyKey, this.#username);
+        await HanaClient.statementExecPromisified(deleteSortItemsStatement);
+    }
+
+    async #deleteTableFilters() {
+        let deleteFiltersStatement = CommonMethods.generateDeleteStatement("TABLE_FILTERS", this.#projectId, this.#fileName, this.#persistencyKey, this.#username);
+        await HanaClient.statementExecPromisified(deleteFiltersStatement);
     }
 };
 

@@ -47,6 +47,19 @@ class CommonMethods {
 
         return questionMarks.join();
     }
+
+    static generateDeleteStatement(tableName, projectId, fileName, persistencyKey, username){
+		let deleteStatement =
+			`
+				DELETE FROM "${tableName}"
+					WHERE	PROJECT_ID = '${projectId}' AND
+							FILE_NAME = '${fileName}' AND
+							USER_NAME = '${username}' AND
+							PERSISTENCY_KEY = '${persistencyKey}'
+			`;
+        
+        return deleteStatement;
+    }
 };
 
 module.exports = CommonMethods;

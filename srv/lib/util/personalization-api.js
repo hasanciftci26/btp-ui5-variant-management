@@ -209,6 +209,35 @@ class PersonalizationAPI {
 
         return fields;
     }
+
+    async updatePersonalizationData(personalizationData) {
+        let componentVariant = await this.#updateComponentVariant(personalizationData);
+        return componentVariant;
+    }
+
+    async #updateComponentVariant(variant) {
+        await this.#deleteComponentVariant(variant);
+
+        switch (variant.changeType) {
+            case "table":
+                let smartTable = new SmartTable(variant, this.#username);
+                await smartTable.deleteTableVariant();
+                break;
+            case "filterBar":
+                let smartFilterbar = new SmartFilterbar(variant, this.#username);
+                await smartFilterbar.deleteFilterbarVariant();
+                break;
+        }
+
+        return this.#createComponentVariant(variant);
+    }
+
+    async #deleteComponentVariant(variant) {
+        let deleteVariantStatement = CommonMethods.generateDeleteStatement("COMPONENT_VARIANTS", this.#projectId, variant.fileName,
+            variant.selector.persistencyKey, this.#username);
+
+        await HanaClient.statementExecPromisified(deleteVariantStatement);
+    }
 }
 
 module.exports = PersonalizationAPI;

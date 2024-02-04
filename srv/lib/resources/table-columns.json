@@ -44,6 +44,7 @@
         "USER_NAME",
         "PERSISTENCY_KEY",
         "COLUMN_KEY",
+        "ITEM_ID",
         "OPERATION",
         "FIRST_VALUE",
         "SECOND_VALUE",
