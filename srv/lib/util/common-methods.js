@@ -48,21 +48,24 @@ class CommonMethods {
         return questionMarks.join();
     }
 
-    static generateDeleteStatement(tableName, projectId, fileName, persistencyKey, username, operation) {
+    static generateDeleteStatement(tableName, projectId, fileName, persistencyKey, username, operation, layer) {
         let deleteStatement =
             `
 				DELETE FROM "${tableName}"
 					WHERE	PROJECT_ID = '${projectId}' AND
-							FILE_NAME = '${fileName}' AND
-							USER_NAME = '${username}'
+							FILE_NAME = '${fileName}'
 			`;
 
         if (operation === "UPDATE") {
             deleteStatement = deleteStatement + " AND PERSISTENCY_KEY = '" + persistencyKey + "'";
         }
 
+        if (layer !== "PUBLIC") {
+            deleteStatement = deleteStatement + " AND USER_NAME = '" + username + "'";
+        }
+
         return deleteStatement;
     }
-};
+}
 
 module.exports = CommonMethods;

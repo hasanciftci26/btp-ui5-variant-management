@@ -160,7 +160,7 @@ class SmartFilterbar {
             await HanaClient.statementExecPromisified(filterContentInsertStatement, [
                 variant.projectId,
                 variant.fileName,
-                this.#username,
+                variant.support.user || this.#username,
                 variant.selector.persistencyKey,
                 content.name,
                 content.group,
@@ -189,7 +189,7 @@ class SmartFilterbar {
             await HanaClient.statementExecPromisified(filterOrderInsertStatement, [
                 variant.projectId,
                 variant.fileName,
-                this.#username,
+                variant.support.user || this.#username,
                 variant.selector.persistencyKey,
                 filter.name,
                 filter.group,
@@ -212,7 +212,7 @@ class SmartFilterbar {
                     await HanaClient.statementExecPromisified(filterRangeInsertStatement, [
                         variant.projectId,
                         variant.fileName,
-                        this.#username,
+                        variant.support.user || this.#username,
                         variant.selector.persistencyKey,
                         field,
                         crypto.randomUUID(),
@@ -228,7 +228,7 @@ class SmartFilterbar {
                 await HanaClient.statementExecPromisified(filterRangeInsertStatement, [
                     variant.projectId,
                     variant.fileName,
-                    this.#username,
+                    variant.support.user || this.#username,
                     variant.selector.persistencyKey,
                     field,
                     crypto.randomUUID(),
@@ -262,7 +262,7 @@ class SmartFilterbar {
                     await HanaClient.statementExecPromisified(filterItemInsertStatement, [
                         variant.projectId,
                         variant.fileName,
-                        this.#username,
+                        variant.support.user || this.#username,
                         variant.selector.persistencyKey,
                         field,
                         content.key,
@@ -285,22 +285,22 @@ class SmartFilterbar {
     }
 
     async #deleteFilterbarContent(operation) {
-        let deleteContentStatement = CommonMethods.generateDeleteStatement("FILTERBAR_CONTENT", this.#projectId, this.#fileName, this.#persistencyKey, this.#username, operation);
+        let deleteContentStatement = CommonMethods.generateDeleteStatement("FILTERBAR_CONTENT", this.#projectId, this.#fileName, this.#persistencyKey, this.#username, operation, this.#layer);
         await HanaClient.statementExecPromisified(deleteContentStatement);
     }
 
     async #deleteFilterbarOrder(operation) {
-        let deleteOrderStatement = CommonMethods.generateDeleteStatement("FILTERBAR_ORDER", this.#projectId, this.#fileName, this.#persistencyKey, this.#username, operation);
+        let deleteOrderStatement = CommonMethods.generateDeleteStatement("FILTERBAR_ORDER", this.#projectId, this.#fileName, this.#persistencyKey, this.#username, operation, this.#layer);
         await HanaClient.statementExecPromisified(deleteOrderStatement);
     }
 
     async #deleteFilterbarRanges(operation) {
-        let deleteRangesStatement = CommonMethods.generateDeleteStatement("FILTERBAR_RANGES", this.#projectId, this.#fileName, this.#persistencyKey, this.#username, operation);
+        let deleteRangesStatement = CommonMethods.generateDeleteStatement("FILTERBAR_RANGES", this.#projectId, this.#fileName, this.#persistencyKey, this.#username, operation, this.#layer);
         await HanaClient.statementExecPromisified(deleteRangesStatement);
     }
 
     async #deleteFilterbarItems(operation) {
-        let deleteItemsStatement = CommonMethods.generateDeleteStatement("FILTERBAR_ITEMS", this.#projectId, this.#fileName, this.#persistencyKey, this.#username, operation);
+        let deleteItemsStatement = CommonMethods.generateDeleteStatement("FILTERBAR_ITEMS", this.#projectId, this.#fileName, this.#persistencyKey, this.#username, operation, this.#layer);
         await HanaClient.statementExecPromisified(deleteItemsStatement);
     }
 };

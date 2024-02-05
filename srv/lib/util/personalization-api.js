@@ -125,12 +125,12 @@ class PersonalizationAPI {
     async #getChangesFromDB() {
         let changesStatement =
             `
-                SELECT * FROM "COMPONENT_VARIANTS"
-                WHERE PROJECT_ID = '${this.#projectId}' AND
-                      USER_NAME = '${this.#username}'   AND
-                      LAYER = '${this.#layer}'          AND
-                      CHANGE_TYPE IN ('defaultVariant','updateVariant')
-            `;
+                    SELECT * FROM "COMPONENT_VARIANTS"
+                    WHERE PROJECT_ID = '${this.#projectId}' AND
+                          USER_NAME = '${this.#username}'   AND
+                          LAYER = '${this.#layer}'          AND
+                          CHANGE_TYPE IN ('defaultVariant','updateVariant')
+                `;
 
         return HanaClient.statementExecPromisified(changesStatement);
     }
@@ -138,11 +138,11 @@ class PersonalizationAPI {
     async #getCompVariantsFromDB() {
         let dbStatement =
             `
-                SELECT * FROM COMPONENT_VARIANTS
-                WHERE PROJECT_ID = '${this.#projectId}' AND
-                      LAYER      = '${this.#layer}'     AND
-                      CHANGE_TYPE NOT IN ('defaultVariant','updateVariant')
-            `;
+                    SELECT * FROM COMPONENT_VARIANTS
+                    WHERE PROJECT_ID = '${this.#projectId}' AND
+                          LAYER      = '${this.#layer}'     AND
+                          CHANGE_TYPE NOT IN ('defaultVariant','updateVariant')
+                `;
 
         if (this.#layer === "USER") {
             dbStatement = dbStatement + " AND USER_NAME = '" + this.#username + "'";
@@ -199,7 +199,7 @@ class PersonalizationAPI {
         let variantInsertParams = [
             variant.projectId,
             variant.fileName,
-            this.#username,
+            variant.support.user || this.#username,
             variant.selector.persistencyKey,
             variant.support?.generator,
             variant.originalLanguage,
@@ -221,7 +221,7 @@ class PersonalizationAPI {
         let variantInsertStatement = CommonMethods.generateInsertStatement("COMPONENT_VARIANTS");
 
         variant.creation = currentTimeStamp;
-        variant.support.user = this.#username;
+        variant.support.user = variant.support.user || this.#username;
         return {
             statement: variantInsertStatement,
             params: variantInsertParams
@@ -293,7 +293,7 @@ class PersonalizationAPI {
 
     async #deleteComponentVariant(variant) {
         let deleteVariantStatement = CommonMethods.generateDeleteStatement("COMPONENT_VARIANTS", this.#projectId, variant.fileName,
-            variant.selector.persistencyKey, this.#username, "UPDATE");
+            variant.selector.persistencyKey, this.#username, "UPDATE", this.#layer);
 
         await HanaClient.statementExecPromisified(deleteVariantStatement);
     }
@@ -301,21 +301,21 @@ class PersonalizationAPI {
     async #updateDefaultVariant(variant) {
         let updateDefaultVariantStatement =
             `
-				UPDATE "COMPONENT_VARIANTS"
-				SET DEFAULT_VARIANT_NAME = '${variant.content.defaultVariantName}'
-				WHERE PROJECT_ID = '${this.#projectId}'                      AND
-					  FILE_NAME = '${variant.fileName}'                      AND
-					  USER_NAME = '${this.#username}'                        AND
-					  PERSISTENCY_KEY = '${variant.selector.persistencyKey}' AND
-					  CHANGE_TYPE = 'defaultVariant'
-			`;
+                    UPDATE "COMPONENT_VARIANTS"
+                    SET DEFAULT_VARIANT_NAME = '${variant.content.defaultVariantName}'
+                    WHERE PROJECT_ID = '${this.#projectId}'                      AND
+                          FILE_NAME = '${variant.fileName}'                      AND
+                          USER_NAME = '${this.#username}'                        AND
+                          PERSISTENCY_KEY = '${variant.selector.persistencyKey}' AND
+                          CHANGE_TYPE = 'defaultVariant'
+                `;
 
         await HanaClient.statementExecPromisified(updateDefaultVariantStatement);
     }
 
     async deletePersonalizationData(fileName) {
         let deleteVariantStatement = CommonMethods.generateDeleteStatement("COMPONENT_VARIANTS", this.#projectId, fileName,
-            "UNKNOWN", this.#username, "DELETE"),
+            "UNKNOWN", this.#username, "DELETE", this.#layer),
             variant = {
                 PROJECT_ID: this.#projectId,
                 FILE_NAME: fileName,

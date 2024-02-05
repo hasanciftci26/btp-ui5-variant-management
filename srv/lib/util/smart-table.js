@@ -119,7 +119,7 @@ class SmartTable {
             await HanaClient.statementExecPromisified(tableContentInsertStatement, [
                 variant.projectId,
                 variant.fileName,
-                this.#username,
+                variant.support.user || this.#username,
                 variant.selector.persistencyKey,
                 content.columnKey,
                 content?.index,
@@ -140,7 +140,7 @@ class SmartTable {
             await HanaClient.statementExecPromisified(tableSortInsertStatement, [
                 variant.projectId,
                 variant.fileName,
-                this.#username,
+                variant.support.user || this.#username,
                 variant.selector.persistencyKey,
                 content.columnKey,
                 content.operation
@@ -159,7 +159,7 @@ class SmartTable {
             await HanaClient.statementExecPromisified(tableFilterInsertStatement, [
                 variant.projectId,
                 variant.fileName,
-                this.#username,
+                variant.support.user || this.#username,
                 variant.selector.persistencyKey,
                 content.columnKey,
                 crypto.randomUUID(),
@@ -180,17 +180,17 @@ class SmartTable {
     }
 
     async #deleteTableContent(operation) {
-        let deleteContentStatement = CommonMethods.generateDeleteStatement("TABLE_CONTENT", this.#projectId, this.#fileName, this.#persistencyKey, this.#username, operation);
+        let deleteContentStatement = CommonMethods.generateDeleteStatement("TABLE_CONTENT", this.#projectId, this.#fileName, this.#persistencyKey, this.#username, operation, this.#layer);
         await HanaClient.statementExecPromisified(deleteContentStatement);
     }
 
     async #deleteTableSortItems(operation) {
-        let deleteSortItemsStatement = CommonMethods.generateDeleteStatement("TABLE_SORT_ITEMS", this.#projectId, this.#fileName, this.#persistencyKey, this.#username, operation);
+        let deleteSortItemsStatement = CommonMethods.generateDeleteStatement("TABLE_SORT_ITEMS", this.#projectId, this.#fileName, this.#persistencyKey, this.#username, operation, this.#layer);
         await HanaClient.statementExecPromisified(deleteSortItemsStatement);
     }
 
     async #deleteTableFilters(operation) {
-        let deleteFiltersStatement = CommonMethods.generateDeleteStatement("TABLE_FILTERS", this.#projectId, this.#fileName, this.#persistencyKey, this.#username, operation);
+        let deleteFiltersStatement = CommonMethods.generateDeleteStatement("TABLE_FILTERS", this.#projectId, this.#fileName, this.#persistencyKey, this.#username, operation, this.#layer);
         await HanaClient.statementExecPromisified(deleteFiltersStatement);
     }
 };
